@@ -7,6 +7,7 @@ from skimage import io # 미니맵 처리
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 import numpy as np
+
 #챔피언 이상한 정보도 들어있는 드래곤 딕딕딕구조 {키:{},키:{}}
 whole_champions=requests.get("http://ddragon.leagueoflegends.com/cdn/9.21.1/data/ko_KR/champion.json").json()
 
@@ -35,9 +36,9 @@ for i in range(len(all_champion_names)):
 	champion_id_encrypted[dict_champions_info[all_champion_names[i]]['key']]=all_champion_names[i]
 
 
-summoner_name="o짐"
+summoner_name="이짱아"
 url_front="https://kr.api.riotgames.com/"
-api_key="?api_key=RGAPI-abe63137-7e8f-4440-9ba6-276fe6e0cba3"
+api_key="?api_key=RGAPI-2eba737d-3212-41eb-8951-ba095ab1bc17"
 
 #유저기본정보
 url_summoner_base= "lol/summoner/v4/summoners/by-name/"+summoner_name
@@ -51,7 +52,7 @@ combi_summoner_base = url_front+url_summoner_base+api_key
 dict_user_base=requests.get(combi_summoner_base).json()
 #유저 암호화닉
 user_id_encrypted=dict_user_base['id']
-print(summoner_name,user_id_encrypted)
+#print(summoner_name,user_id_encrypted)
 
 accountId=dict_user_base['accountId']
 
@@ -126,7 +127,7 @@ for k in range(10):
 #teams=[{}.keys=['팀아이디,승리여부,퍼블,퍼타,퍼억,퍼바론,퍼드레곤,퍼전령,부순타워,부순억제기,잡은바론,잡드래곤,밴[{챔피언아이디:챔피언,픽턴:픽턴}]']]
 
 #전체 정보
-summary_game=requests.get("https://kr.api.riotgames.com/lol/match/v4/matches/"+str(gameId)+"?api_key=RGAPI-abe63137-7e8f-4440-9ba6-276fe6e0cba3").json()
+summary_game=requests.get("https://kr.api.riotgames.com/lol/match/v4/matches/"+str(gameId)+api_key).json()
 #summary_game=requests.get("https://kr.api.riotgames.com/lol/match/v4/matches/3960142353?api_key=RGAPI-abe63137-7e8f-4440-9ba6-276fe6e0cba3").json()
 #for i in range(10):
 	#print(summary_game['participants'][i])
@@ -136,7 +137,7 @@ partitipantities_s_g=summary_game['participantIdentities']
 #teamline 위치 summary_game['participants'][i]['timeline']['lane']
 #아래 포문 세개를 통해 
 #participantId_to_lanecamp
-#	={participantId:[participantId,teamId,champId,lane,sommonerId]}
+#	={participantId:[participantId,teamId,champId,lane,sommonerId],[동선정보{x,y}]}
 participantId_to_summoner={}
 for i in partitipantities_s_g:
 	participantId_to_summoner[i['participantId']]=i['player']['summonerName']
@@ -148,12 +149,12 @@ for i in range(10):
 	participantId_to_lanechamp[i+1].append(summary_game['participants'][i]['timeline']['lane'])
 	participantId_to_lanechamp[i+1].append(participantId_to_summoner[i+1])
 
-print(participantId_to_lanechamp)
+#print(participantId_to_lanechamp)
 
 
 #타임라인
 dongsun={}
-timetest = requests.get("https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/"+str(gameId)+"?api_key=RGAPI-abe63137-7e8f-4440-9ba6-276fe6e0cba3").json()
+timetest = requests.get("https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/"+str(gameId)+api_key).json()
 for i in range(len(timetest['frames'])):
 	for j in list(timetest['frames'][i]['participantFrames'].keys()):
 		if j in list(dongsun.keys()):
@@ -166,27 +167,35 @@ for i in range(len(timetest['frames'])):
 			dongsun[j]=[]
 			dongsun[j].append(timetest['frames'][i]['participantFrames'][j]['position'])
 plt.figure()
+color_list = ['b','g','r','c','y','m','k','w']
 for i in list(dongsun.keys()):
-	#i+1번의 동선
+	#i번의 동선
 	#print(i)
+	participantId_to_lanechamp[int(i)].append([])
+	#print('i=',i)
 	for j in range(len(dongsun[i])):
-		#dongsun[i][j]
+		#print("i,j=",dongsun[i][j])
+		participantId_to_lanechamp[int(i)][-1].append(dongsun[i][j])
+		#dongsun[i][j] = i유저의 j타이밍에 좌표 {'x':xxx,'y':yyy} 
 		#몇번유저 보여줄건지
-		if j==3:
-			plt.scatter(dongsun[i][j]['x'],dongsun[i][j]['y']*-1)
-plt.show()
+		#if int(i)==5:
+			#plt.scatter(dongsun[i][j]['x'],dongsun[i][j]['y'])
+#plt.show()
 
-'''
+sorted_team=[]
+posi=['TOP','JUNGLE','MIDDLE','BOTTOM','BOTTOM']
 
-#타임라인
-dongsun=[]
-timetest = requests.get("https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/"+str(gameId)+"?api_key=RGAPI-abe63137-7e8f-4440-9ba6-276fe6e0cba3").json()
-for i in range(len(timetest['frames'])):
-	dongsun.append([])
-	for j in list(timetest['frames'][i]['participantFrames'].keys()):
-		#position
-		try:
-			print(j,timetest['frames'][i]['participantFrames'][j]['position'])
-		except:
-			print(j,timetest['frames'][i]['participantFrames'][j])
-			'''
+index=0
+while index<10:
+	print(index)
+	for i in list(participantId_to_lanechamp.keys()):
+		if index<5:
+			if participantId_to_lanechamp[i][1]==100 and participantId_to_lanechamp[i][3]==posi[index]:
+				sorted_team.append(participantId_to_lanechamp[i])
+				index+=1
+		else:
+			if participantId_to_lanechamp[i][1]==200 and participantId_to_lanechamp[i][3]==posi[index-5]:
+				sorted_team.append(participantId_to_lanechamp[i])
+				index+=1
+for i in range(len(sorted_team)):
+	print(sorted_team[i])
