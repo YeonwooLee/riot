@@ -182,12 +182,18 @@ for i in list(dongsun.keys()):
 			plt.scatter(dongsun[i][j]['x'],dongsun[i][j]['y'])
 #plt.show()
 
+#포지순서별, 팀별 정리
 sorted_team=[]
 posi=['TOP','JUNGLE','MIDDLE','BOTTOM','BOTTOM']
+#어디에 넣을지 정하는 인덱스
 index=0
+#이미 쓴 키 빼두는 곳
 used_index=[]
+#used_index=[]랑 같은거같은데 모르겠음
 already_searched=[]
+#participantId_to_lanechamp의 키
 ptlkey=list(participantId_to_lanechamp.keys())
+#열번 ptlkey를 전부 돌리면 sorted_team len은 10이 되어야 정상
 for t in range(10):
 	if index==10:
 		break
@@ -209,7 +215,7 @@ for t in range(10):
 					sorted_team.append(participantId_to_lanechamp[i])
 					index+=1
 					ptlkey.remove(i)
-#비정상포지션
+#비정상포지션 즉, 열번 돌렸는데 sortedlist가 길이가 10이 아니었단것, 끝에 -1 추가
 if len(sorted_team)<10:
 	for i in range(len(ptlkey)):
 		sorted_team.append(participantId_to_lanechamp[ptlkey[i]])
