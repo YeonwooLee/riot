@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #챔피언 이상한 정보도 들어있는 드래곤 딕딕딕구조 {키:{},키:{}}
-whole_champions=requests.get("http://ddragon.leagueoflegends.com/cdn/9.21.1/data/ko_KR/champion.json").json()
+whole_champions=requests.get("http://ddragon.leagueoflegends.com/cdn/9.23.1/data/en_US/champion.json").json()
 
 #챔피언정보, 최상위키는 챔피언이름,딕딕구조{Aatrox:{version:,id:'챔피언이름',key:'챔피언비밀아이디',name:'챔피언이름'}}
 dict_champions_info=whole_champions['data']
@@ -35,10 +35,10 @@ champion_id_encrypted={}
 for i in range(len(all_champion_names)):
 	champion_id_encrypted[dict_champions_info[all_champion_names[i]]['key']]=all_champion_names[i]
 
-
-summoner_name="꼬몽딸레몽"
+#print(len(list(champion_id_encrypted.keys())))
+summoner_name="opplk123"
 url_front="https://kr.api.riotgames.com/"
-api_key="?api_key=RGAPI-d8cc6dad-d288-47f8-8b24-953df9a30ef0"
+api_key="?api_key=RGAPI-c0fbcf54-4c60-47b7-b834-a36cbda1a7bc"
 
 #유저기본정보
 url_summoner_base= "lol/summoner/v4/summoners/by-name/"+summoner_name
@@ -64,7 +64,7 @@ combi_champion_mastery=url_front+url_champion_mastery+api_key
 #key목록
 #championId,championLevel,championPoints
 list_dict_champion_mastery=requests.get(combi_champion_mastery).json()
-
+#print(list_dict_champion_mastery)
 #챔피언 마스터리 이차원배열 원소는 [챔피언이름,숙련도,숙련도]
 summary_champion_mastery = []
 for i in list_dict_champion_mastery:
@@ -180,7 +180,7 @@ for i in list(dongsun.keys()):
 		#몇번유저 보여줄건지
 		if int(i)!=-1:
 			plt.scatter(dongsun[i][j]['x'],dongsun[i][j]['y'])
-#plt.show()
+plt.show()
 
 #포지순서별, 팀별 정리
 sorted_team=[]
