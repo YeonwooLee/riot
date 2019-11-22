@@ -36,9 +36,9 @@ for i in range(len(all_champion_names)):
 	champion_id_encrypted[dict_champions_info[all_champion_names[i]]['key']]=all_champion_names[i]
 
 #print(len(list(champion_id_encrypted.keys())))
-summoner_name="opplk123"
+summoner_name="78698669827171"
 url_front="https://kr.api.riotgames.com/"
-api_key="?api_key=RGAPI-c0fbcf54-4c60-47b7-b834-a36cbda1a7bc"
+api_key="?api_key=RGAPI-bcb61f6d-178e-402a-a683-256d0060d9a5"
 
 #유저기본정보
 url_summoner_base= "lol/summoner/v4/summoners/by-name/"+summoner_name
@@ -50,6 +50,7 @@ combi_summoner_base = url_front+url_summoner_base+api_key
 #name: 소환사닉, revisionDate: 갱신일인듯, summonerLevel: 레벨
 #{'id': 'wk2kwDM-AMGvFNd5SSJ9lziIhVAroLIFWrS21sSt9j9XbQ', 'accountId': 'na-hx-RKQYkUNb1hj4P-0N89ZGojItqh5j0EbNDmb0W4', 'puuid': 'i41HJZGC2M2pdd-tWkwhI1peaSUbQV8Bvh-EbSwrolo2W3dRytPzq8nfT20kR8xayhywd_5lE_pPNQ', 'name': '안호진똥똥꼬냄새', 'profileIconId': 4088, 'revisionDate': 1571942416000, 'summonerLevel': 113}
 dict_user_base=requests.get(combi_summoner_base).json()
+print(dict_user_base)
 #유저 암호화닉
 user_id_encrypted=dict_user_base['id']
 #print(summoner_name,user_id_encrypted)
@@ -151,7 +152,6 @@ for i in range(10):
 
 #print(participantId_to_lanechamp)
 
-
 #타임라인
 dongsun={}
 timetest = requests.get("https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/"+str(gameId)+api_key).json()
@@ -178,8 +178,8 @@ for i in list(dongsun.keys()):
 		participantId_to_lanechamp[int(i)][-1].append(dongsun[i][j])
 		#dongsun[i][j] = i유저의 j타이밍에 좌표 {'x':xxx,'y':yyy} 
 		#몇번유저 보여줄건지
-		if int(i)!=-1:
-			plt.scatter(dongsun[i][j]['x'],dongsun[i][j]['y'])
+		if int(i)==8:
+			plt.scatter(dongsun[i][j]['y'],dongsun[i][j]['x'])
 plt.show()
 
 #포지순서별, 팀별 정리
@@ -227,3 +227,4 @@ else:
 
 for i in range(len(sorted_team)):
 	print(sorted_team[i])
+
