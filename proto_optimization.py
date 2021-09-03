@@ -247,7 +247,7 @@ def phase1():
 	keytochamp={}
 	#버전바뀔때마다 교체해줘야합니다. 적어도 신챔 나올때는 교체해줘야됩니다.
 	#http://ddragon.leagueoflegends.com/cdn/10.2.1/data/ko_KR/champion.json -> http://ddragon.leagueoflegends.com/cdn/11.3.1/data/ko_KR/champion.json
-	whole_champions=requests.get("http://ddragon.leagueoflegends.com/cdn/11.3.1/data/ko_KR/champion.json").json()
+	whole_champions=requests.get("https://ddragon.leagueoflegends.com/cdn/11.17.1/data/ko_KR/champion.json").json()
 	for champ in list(whole_champions['data'].keys()):
 		keytochamp[whole_champions['data'][champ]['key']]=whole_champions['data'][champ]['name']
 
@@ -341,7 +341,7 @@ def from_accountId_get_gameid(accountId):
 				write_json('gameids',gameids)
 				#매 패치마다 수정해야하는 부분입니다. 에포크밀리초로 지난 패치시점의 게임기록은 기록하지 않습니다.
 				#https://www.epochconverter.com/
-				if data['matches'][i]['timestamp']<1612342840000:
+				if data['matches'][i]['timestamp']<1629889193000:
 					print("얘꺼 이번패치 기록 끝")
 					return 3
 				return str(gameid)
@@ -1157,7 +1157,8 @@ def start():
 				
 				if success==1:
 					api_key=getkey()
-					print("{}-------key 교체------->{}".format(err_key,api_key))
+					print("key교체\n{}\n--->{}".format(err_key,api_key))
+					telegram_sendMSG("1759530601","key교체\n{}\n--->{}\n교체완료".format(err_key,api_key))
 					quit_sign=0
 					send_before()
 					break
@@ -1174,7 +1175,7 @@ def start():
 		#key에 문제 없으면 시작
 		#1. 유저 리스트를 만든다 4000명, 셔플
 		try:
-			user_list = get_4000("GOLD")
+			user_list = get_4000("PLATINUM")
 		except:
 			continue
 
