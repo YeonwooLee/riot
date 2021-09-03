@@ -18,6 +18,16 @@ import poplib
 import email
 from email.mime.text import MIMEText
 import random
+import telegram
+#telegram 사용자 계정 key - 유저마다 다름
+telgm_token = '1826723461:AAHUUCbFwlt45v2uYX8CTZyOcsrBf_QAvqQ'
+bot = telegram.Bot(token = telgm_token)
+#텔레그램 
+def telegram_sendMSG(chatId,msg):
+	#print("메세지대리")
+	#테스트후 해제 주석
+	bot.sendMessage(chat_id = chatId, text=msg)
+
 
 #동일디렉터리에 있는 api_key.txt에서 api사용에 필요한 key 읽어옴
 #프로그램 초기 실행시 or 실행도중 키 만료되서 교체해야될 때 쓰임
@@ -215,6 +225,7 @@ def req_api(url):
 			print('403발생시각:',now)
 			send_final()
 			quit_sign=1
+			write_json('quit_sign',1)
 			return 0
 		else:
 			print(response)
@@ -1127,15 +1138,26 @@ def send_before():
 
 def start():
 	global quit_sign
+	global api_key
 	#롤 기본정보 수집//버전, 패치별 코드 수정 필요
 	phase1()
 	while True:
 		count = 0
 		#key에 문제가 생기면 여기서 처리
 		if quit_sign==1:
+			send_once=0
+			err_key = api_key
 			while True:
-				success = get_key_from_mail()
+				#success = get_key_from_mail()
+				if load_json('quit_sign')==0:
+					success=1
+				else:
+					success=0
+
+				
 				if success==1:
+					api_key=getkey()
+					print("{}-------key 교체------->{}".format(err_key,api_key))
 					quit_sign=0
 					send_before()
 					break
@@ -1144,6 +1166,9 @@ def start():
 					now = datetime.datetime.now()
 					print(now)
 					time.sleep(10)
+					if send_once==0:
+						telegram_sendMSG("1759530601","키 교체 필요")
+						send_once=1
 		
 
 		#key에 문제 없으면 시작
