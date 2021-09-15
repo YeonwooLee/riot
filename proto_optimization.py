@@ -20,7 +20,7 @@ from email.mime.text import MIMEText
 import random
 import telegram
 #telegram 사용자 계정 key - 유저마다 다름
-telgm_token = '1826723461:AAHUUCbFwlt45v2uYX8CTZyOcsrBf_QAvqQ'
+telgm_token = '1925566531:AAElSg-wydMKDBdCcH0JlPJAIKd5fzr7W1I'
 bot = telegram.Bot(token = telgm_token)
 #텔레그램 
 def telegram_sendMSG(chatId,msg):
@@ -1041,6 +1041,12 @@ def collect(nick):
 			print(i,thisgame[i],end=', ')
 		else:
 			print(i,thisgame[i])
+	for t in ("team_blue","team_red"):
+		len_a = len(thisgame[t].values)
+		len_b = len(set(thisgame[t].values))
+		if len_a!=len_b:
+			print("중복자료(기입X)")
+			return 0
 	print('@'*100)
 	try:
 		new_before = load_json('new_before')
@@ -1137,6 +1143,11 @@ def send_before():
 
 
 def start():
+	def send_all_ids(msg):
+		ids={"연우":"1993842151", "재구":"747977556"}
+		for id in ids.keys():
+			telegram_sendMSG(ids[id],msg)
+
 	global quit_sign
 	global api_key
 	#롤 기본정보 수집//버전, 패치별 코드 수정 필요
@@ -1158,7 +1169,7 @@ def start():
 				if success==1:
 					api_key=getkey()
 					print("key교체\n{}\n--->{}".format(err_key,api_key))
-					telegram_sendMSG("1759530601","key교체\n{}\n--->{}\n교체완료".format(err_key,api_key))
+					send_all_ids("key교체\n{}\n--->{}\n교체완료".format(err_key,api_key))
 					quit_sign=0
 					send_before()
 					break
@@ -1168,7 +1179,7 @@ def start():
 					print(now)
 					time.sleep(10)
 					if send_once==0:
-						telegram_sendMSG("1759530601","키 교체 필요")
+						send_all_ids("키 교체 필요")
 						send_once=1
 		
 

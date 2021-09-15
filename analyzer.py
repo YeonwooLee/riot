@@ -4,7 +4,7 @@ import operator
 import datetime
 import time
 from skimage import io # 미니맵 처리
-from sklearn.preprocessing import MinMaxScaler
+#from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 from matplotlib import font_manager, rc
 from matplotlib import style
@@ -21,7 +21,7 @@ import email
 from email.mime.text import MIMEText
 import random
 import pandas as pd
-import seaborn as sns
+#import seaborn as sns
 from openpyxl import Workbook
 def phase1():
 	print('롤 기본 데이터 수집')
