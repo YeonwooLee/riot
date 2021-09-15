@@ -1160,17 +1160,15 @@ def send_before():
 	s.close()
 
 
-def start(start_day,version):
+def start():
 	def send_all_ids(msg):
 		ids={"연우":"1993842151", "재구":"747977556"}
 		for id in ids.keys():
 			telegram_sendMSG(ids[id],msg)
-
-	global start_day_for_filename
-	global version_for_filename
-	start_day_for_filename = start_day
-	version_for_filename = version
-
+	start_day = input("가져오려는 자료의 패치일(yyyy-mm-dd형식):")
+	print(1)
+	version = input("가져오려는 자료의 버전(x.y.1로 들어감 09면 9로 입력):")
+	print(2)
 	global quit_sign
 	global api_key
 	#롤 기본정보 수집//버전, 패치별 코드 수정 필요
@@ -1234,8 +1232,5 @@ def start(start_day,version):
 					send_before()
 					print('백업완료, 메일완료')
 					count=0
-
-
-#start_day = input("가져오려는 자료의 패치일(yyyy-mm-dd형식):")
-#version = input("가져오려는 자료의 버전(x.y.1로 들어감 09면 9로 입력):")
-start("2021-09-15","11.18")
+					
+start()
