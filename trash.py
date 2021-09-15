@@ -1,5 +1,2 @@
-def a(ii):
-	def b(ii):
-		print(ii)
-	b(3)
-a(22)
+a=input()
+print(a.split('.')[0]+'_'+a.split('.')[1])

@@ -18,6 +18,13 @@ import poplib
 import email
 from email.mime.text import MIMEText
 import random
+import telegram
+
+#텔레그램 
+def telegram_sendMSG(chatId,msg):
+	#print("메세지대리")
+	#테스트후 해제 주석
+	bot.sendMessage(chat_id = chatId, text=msg)
 
 
 #날짜 -> 에포크밀리초 (시간은 롤 패치 종료시간인 오전10시 고정해둠)
@@ -162,28 +169,28 @@ def send_final():
 	msg.attach(contentPart) 
 
 	#파일 추가
-	etcFileName = 'new_before.json'
+	etcFileName = ffiname+'new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 	#파일 추가
-	etcFileName = 'gameids.json'
+	etcFileName = ffiname+'gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_gameids.json'
+	etcFileName = ffiname+'backup_gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_new_before.json'
+	etcFileName = ffiname+'backup_new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
@@ -326,10 +333,10 @@ def from_accountId_get_gameid(accountId,start_day):
 
 	#gameids.json이 이미 있다면 가져오고 없다면 생성하여 가져옵니다. 중복자료 처리에 사용됩니다.
 	try:
-		gameids=load_json('gameids')
+		gameids=load_json(ffiname+'gameids')
 	except:
-		write_json('gameids',[])
-		gameids = load_json('gameids')
+		write_json(ffiname+'gameids',[])
+		gameids = load_json(ffiname+'gameids')
 
 
 	data = req_api(url)
@@ -345,7 +352,7 @@ def from_accountId_get_gameid(accountId,start_day):
 				#중복자료가 아니고 이번 버전에서 행해진 게임이라면 gameids에 기록하여 다음 중복자료 탐색에 사용하고  str타입으로 gameid를 리턴합니다.
 				#gameid는 여러개 받아와도 하나만 사용하는 이유는 최대한 다양한 유저의 자료를 사용해야 치우침이 없을 것 같았습니다.
 				gameids.append(gameid)
-				write_json('gameids',gameids)
+				write_json(ffiname+'gameids',gameids)
 				#매 패치마다 수정해야하는 부분입니다. 에포크밀리초로 지난 패치시점의 게임기록은 기록하지 않습니다.
 				#https://www.epochconverter.com/
 				if data['matches'][i]['timestamp']<date_to_millisecond(start_day):
@@ -1050,12 +1057,12 @@ def collect(nick,start_day):
 			print(i,thisgame[i])
 	print('@'*100)
 	try:
-		new_before = load_json('new_before')
+		new_before = load_json(ffiname+'new_before')
 	except:
-		write_json('new_before',[])
-		new_before = load_json('new_before')
+		write_json(ffiname+'new_before',[])
+		new_before = load_json(ffiname+'new_before')
 	new_before.append(thisgame)
-	write_json('new_before',new_before)
+	write_json(ffiname+'new_before',new_before)
 
 #아래 함수 get_4000과 세트입니다. 분석대상인 자료를 수집하는 부분입니다. 
 #조사를 원하는 metal의 tier1/2/3/4를 1000명씩 수집해 4000명을 만들었습니다.
@@ -1108,28 +1115,28 @@ def send_before():
 	msg.attach(contentPart) 
 
 	#파일 추가
-	etcFileName = 'new_before.json'
+	etcFileName = ffiname+'new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 	#파일 추가
-	etcFileName = 'gameids.json'
+	etcFileName = ffiname+'gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_gameids.json'
+	etcFileName = ffiname+'backup_gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_new_before.json'
+	etcFileName = ffiname+'backup_new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
@@ -1144,9 +1151,15 @@ def send_before():
 
 
 def start(start_day,tier,version):
+	def send_all_ids(msg):
+		ids={"연우":"1993842151", "재구":"747977556"}
+		for id in ids.keys():
+			telegram_sendMSG(ids[id],msg)
 	global quit_sign
 	#롤 기본정보 수집//버전, 패치별 코드 수정 필요
-	
+	global ffiname
+	ffiname=version.split('.')[0]+'_'+version.split('.')[1]
+
 	phase1(version)
 	while True:
 		count = 0
@@ -1185,13 +1198,13 @@ def start(start_day,tier,version):
 			else:
 				count+=1
 				if count==1000:
-					g_backup = load_json('gameids')
-					write_json('backup_gameids',g_backup)
-					backup = load_json('new_before')
-					write_json('backup_new_before',backup)
+					g_backup = load_json(ffiname+'gameids')
+					write_json(ffiname+'backup_gameids',g_backup)
+					backup = load_json(ffiname+'new_before')
+					write_json(ffiname+'backup_new_before',backup)
 
 					send_before()
 					print('백업완료, 메일완료')
 					count=0
 
-start('2021-09-14','PLATINUM','11.18')
+start('2021-09-15','PLATINUM','11.18')
