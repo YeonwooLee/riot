@@ -172,28 +172,28 @@ def send_final():
 	msg.attach(contentPart) 
 
 	#파일 추가
-	etcFileName = 'new_before.json'
+	etcFileName = version_for_filename+'new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 	#파일 추가
-	etcFileName = 'gameids.json'
+	etcFileName = version_for_filename+'gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_gameids.json'
+	etcFileName = version_for_filename+'backup_gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_new_before.json'
+	etcFileName = version_for_filename+'backup_new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
@@ -336,10 +336,10 @@ def from_accountId_get_gameid(accountId,start_day):
 
 	#gameids.json이 이미 있다면 가져오고 없다면 생성하여 가져옵니다. 중복자료 처리에 사용됩니다.
 	try:
-		gameids=load_json('gameids')
+		gameids=load_json(version_for_filename+'gameids')
 	except:
-		write_json('gameids',[])
-		gameids = load_json('gameids')
+		write_json(version_for_filename+'gameids',[])
+		gameids = load_json(version_for_filename+'gameids')
 
 
 	data = req_api(url)
@@ -355,7 +355,7 @@ def from_accountId_get_gameid(accountId,start_day):
 				#중복자료가 아니고 이번 버전에서 행해진 게임이라면 gameids에 기록하여 다음 중복자료 탐색에 사용하고  str타입으로 gameid를 리턴합니다.
 				#gameid는 여러개 받아와도 하나만 사용하는 이유는 최대한 다양한 유저의 자료를 사용해야 치우침이 없을 것 같았습니다.
 				gameids.append(gameid)
-				write_json('gameids',gameids)
+				write_json(version_for_filename+'gameids',gameids)
 				#매 패치마다 수정해야하는 부분입니다. 에포크밀리초로 지난 패치시점의 게임기록은 기록하지 않습니다.
 				#이제 수정 안해도 됩니다
 				#https://www.epochconverter.com/
@@ -1067,12 +1067,12 @@ def collect(nick,start_day):
 			return 0
 	print('@'*100)
 	try:
-		new_before = load_json('new_before')
+		new_before = load_json(version_for_filename+'new_before')
 	except:
-		write_json('new_before',[])
-		new_before = load_json('new_before')
+		write_json(version_for_filename+'new_before',[])
+		new_before = load_json(version_for_filename+'new_before')
 	new_before.append(thisgame)
-	write_json('new_before',new_before)
+	write_json(version_for_filename+'new_before',new_before)
 
 #아래 함수 get_4000과 세트입니다. 분석대상인 자료를 수집하는 부분입니다. 
 #조사를 원하는 metal의 tier1/2/3/4를 1000명씩 수집해 4000명을 만들었습니다.
@@ -1125,28 +1125,28 @@ def send_before():
 	msg.attach(contentPart) 
 
 	#파일 추가
-	etcFileName = 'new_before.json'
+	etcFileName = version_for_filename+'new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 	#파일 추가
-	etcFileName = 'gameids.json'
+	etcFileName = version_for_filename+'gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_gameids.json'
+	etcFileName = version_for_filename+'backup_gameids.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
 	    etcPart.add_header('Content-Disposition','attachment', filename=etcFileName)
 	    msg.attach(etcPart) 
 
-	etcFileName = 'backup_new_before.json'
+	etcFileName = version_for_filename+'backup_new_before.json'
 	with open(etcFileName, 'rb') as etcFD : 
 	    etcPart = MIMEApplication( etcFD.read() )
 	    #첨부파일의 정보를 헤더로 추가
@@ -1169,7 +1169,7 @@ def start(start_day,version):
 	global start_day_for_filename
 	global version_for_filename
 	start_day_for_filename = start_day
-	version_for_filename = version
+	version_for_filename = version.split('.')[0]+"_"+version.split('.')[1]
 
 	global quit_sign
 	global api_key
@@ -1226,10 +1226,10 @@ def start(start_day,version):
 			else:
 				count+=1
 				if count==1000:
-					g_backup = load_json('gameids')
-					write_json('backup_gameids',g_backup)
-					backup = load_json('new_before')
-					write_json('backup_new_before',backup)
+					g_backup = load_json(version_for_filename+'gameids')
+					write_json(version_for_filename+'backup_gameids',g_backup)
+					backup = load_json(version_for_filename+'new_before')
+					write_json(version_for_filename+'backup_new_before',backup)
 
 					send_before()
 					print('백업완료, 메일완료')
