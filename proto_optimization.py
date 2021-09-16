@@ -542,17 +542,7 @@ def get_botttom_final(bot):
 		return 0
 
 
-	'''
-	###여기부터
-	try:
-		new_before = load_json('new_before')
-	except:
-		write_json('new_before',[])
-		new_before = load_json('new_before')
-	new_before.append(lastdata)
-	write_json('new_before',new_before)
-	##여기까지 삭제예정
-	'''
+
 	return lastdata
 
 def get_bottom_full(gameid):
@@ -641,17 +631,6 @@ def new_phase6(bot):
 	if lastdata[-1]!=100 and lastdata[-1]!=200:
 		print('이상 팀 정보3')
 		return 0
-
-
-
-
-#	try:
-#		new_before = load_json('new_before')
-#	except:
-#		write_json('new_before',[])
-#		new_before = load_json('new_before')
-#	new_before.append(lastdata)
-#	write_json('new_before',new_before)
 	return lastdata
 
 
@@ -824,15 +803,6 @@ def mid_phase6(bot):
 	lastdata.insert(1,jglist[0])
 	lastdata.insert(3,jglist[1])
 
-	'''
-	try:
-		new_before = load_json('new_before')
-	except:
-		write_json('new_before',[])
-		new_before = load_json('new_before')
-	new_before.append(lastdata)
-	write_json('new_before',new_before)
-	'''
 	return lastdata
 def get_mid_full(gameid):
 	#print('미드 정보 분석중')
@@ -1046,6 +1016,8 @@ def collect(nick,start_day):
 	if len(team_100.values())!=len(set(team_100.values())) or len(team_200.values())!=len(set(team_200.values())):
 		print("중복포지션 자료로 기록안함")
 		no_write=1
+	else:
+		no_write=0
 	
 
 	thisgame['team_blue']=team_100
@@ -1062,12 +1034,15 @@ def collect(nick,start_day):
 			print(i,thisgame[i],end=', ')
 		else:
 			print(i,thisgame[i])
-	print('@'*100)
+	print('*'*100)
 	if no_write==1:
+		print(no_write,111111111111111111111111111111)
 		return 0
 	try:
+		print(222222222222222222222222222222222222222,ffiname)
 		new_before = load_json(ffiname+'new_before')
 	except:
+		print(ffiname,"<<<333333333333333333333333")
 		write_json(ffiname+'new_before',[])
 		new_before = load_json(ffiname+'new_before')
 	new_before.append(thisgame)
@@ -1190,6 +1165,7 @@ def start(start_day,tier,version):
 					api_key=getkey()
 					print("key교체\n{}\n--->{}".format(err_key,api_key))
 					send_all_ids("key교체\n{}\n--->{}\n교체완료".format(err_key,api_key))
+					api_key=getkey()
 					quit_sign=0
 					send_before()
 					break
@@ -1232,4 +1208,4 @@ def start(start_day,tier,version):
 					print('백업완료, 메일완료')
 					count=0
 
-start('2021-09-15','PLATINUM','11.18')
+start('2021-09-15','GOLD','11.18')
