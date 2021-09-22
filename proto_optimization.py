@@ -1198,9 +1198,10 @@ def start(start_day,tier,version):
 			#try절에 문제 없으면 else문도 실행됨//1000개 자료 기입시마다 1번씩 메일로 백업
 			else:
 				count+=1
-				if count==1000:
+				if count==500:
 					g_backup = load_json(ffiname+'gameids')
 					write_json(ffiname+'backup_gameids',g_backup)
+					
 					backup = load_json(ffiname+'new_before')
 					write_json(ffiname+'backup_new_before',backup)
 
@@ -1208,4 +1209,4 @@ def start(start_day,tier,version):
 					print('백업완료, 메일완료')
 					count=0
 
-start('2021-09-15','GOLD','11.18')
+start('2021-09-22','PLATINUM','11.19')
