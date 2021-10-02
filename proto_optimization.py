@@ -45,6 +45,7 @@ def date_to_millisecond(start_day):
 	millisec = dt_obj.timestamp() * 1000
 
 	return int(millisec)
+
 #동일디렉터리에 있는 api_key.txt에서 api사용에 필요한 key 읽어옴
 #프로그램 초기 실행시 or 실행도중 키 만료되서 교체해야될 때 쓰임
 def getkey():
@@ -326,10 +327,17 @@ def summonerName_to_accountId(summonerName):
 	base_data = req_api(url)
 	return base_data['accountId']
 
+def summonerName_to_puuid(summonerName):
+	#print(summonerName,'의 accountId 요청')
+	global api_key
+	url = 'https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+summonerName+'?api_key='+api_key
+	base_data = req_api(url)
+	return base_data['puuid']
 
 #계정의 accountId를 인자로 받고 최근 게임의 gameid를 리턴합니다.
 #최근 게임이어도 이번 패치 버전 이전의 게임이라면 "얘꺼다봄"을 출력하고 넘어갑니다.
 def from_accountId_get_gameid(accountId,start_day):
+	#https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/IYo8nRoG9IdDHXb6nG-_h8s9gXrF1aw-P8iQ3Jv2NHFZFSqbcLRAEwQSACq_EG33qwPqXWabLiG8oQ/ids?endTime=1632272400000&queue=420&start=0&count=20
 	#print('gameid 가져오는중')
 	#url = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/'+accountId+'?queue=420&endIndex='+str(endindex)+'&beginIndex='+str(beginindex)+'&api_key='+api_key
 	url ='https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/'+accountId+'?queue=420&api_key='+api_key
@@ -359,14 +367,69 @@ def from_accountId_get_gameid(accountId,start_day):
 				#매 패치마다 수정해야하는 부분입니다. 에포크밀리초로 지난 패치시점의 게임기록은 기록하지 않습니다.
 				#https://www.epochconverter.com/
 				if data['matches'][i]['timestamp']<date_to_millisecond(start_day):
+					print(data['matches'][i]['timestamp'],date_to_millisecond(start_day))
 					print("얘꺼 이번패치 기록 끝")
 					return 3
-				return str(gameid)
+				else:
+					print("게임아이디 수집 완료$")
+					return str(gameid)
 		else:
 			print("얘꺼다봄######################################################")
 			return 0
 	else:
 		return 0
+#계정의 accountId를 인자로 받고 최근 게임의 gameid를 리턴합니다.
+#최근 게임이어도 이번 패치 버전 이전의 게임이라면 "얘꺼다봄"을 출력하고 넘어갑니다.
+#url 맨 뒤에 보면 count있음 20개만 가져옴
+def from_puuid_get_gameid(puuid,start_day):
+	start_day=str(date_to_millisecond(start_day))
+	#url='https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/'+puuid+'/ids?endTime='+start_day+'&queue=420&start=0&count=20&api_key='+api_key
+	#url='https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/'+puuid+'/ids?endTime='+start_day+'&queue=420&start=0&count=20&api_key='+api_key
+	url='https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/'+puuid+'/ids?queue=420&start=0&count=20&api_key='+api_key
+	#print('gameid 가져오는중')
+	#url = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/'+accountId+'?queue=420&endIndex='+str(endindex)+'&beginIndex='+str(beginindex)+'&api_key='+api_key
+	#url ='https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/'+accountId+'?queue=420&api_key='+api_key
+
+	#gameids.json이 이미 있다면 가져오고 없다면 생성하여 가져옵니다. 중복자료 처리에 사용됩니다.
+	try:
+		gameids=load_json(ffiname+'gameids')
+	except:
+		write_json(ffiname+'gameids',[])
+		gameids = load_json(ffiname+'gameids')
+
+
+	data = req_api(url)
+	#print(data)
+	if len(data)>0:
+		#계정의 게임 기록들은 data라는 dict의 'matches'라는 key로 접근합니다
+		for i in data:
+			gameid = i
+			#5대5 게임인점, 유저를 먼저 모으고 각 유저의 게임기록을 살펴보는점 때문에 이미 조사한 게임이 중복되서 들어오는 경우가 생깁니다.
+			#gameids.json은 그런 문제를 해결합니다. 이미 gameids에 있는 gameid라면 continue합니다.
+			if gameid in gameids:
+				continue
+			url_for_time_check = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'?api_key='+api_key
+			game_start_time = req_api(url_for_time_check)["info"]["gameCreation"]
+			#print(game_start_time,"<<<game_start_time",type(game_start_time))
+			#print(start_day,"<<<<<<start_day",type(start_day))
+			if game_start_time < int(start_day):
+				print("얘꺼 이번패치 다봄")
+				return 0
+			else:
+				#중복자료가 아니고 이번 버전에서 행해진 게임이라면 gameids에 기록하여 다음 중복자료 탐색에 사용하고  str타입으로 gameid를 리턴합니다.
+				#gameid는 여러개 받아와도 하나만 사용하는 이유는 최대한 다양한 유저의 자료를 사용해야 치우침이 없을 것 같았습니다.
+				gameids.append(gameid)
+				write_json(ffiname+'gameids',gameids)
+				#매 패치마다 수정해야하는 부분입니다. 에포크밀리초로 지난 패치시점의 게임기록은 기록하지 않습니다.
+				#https://www.epochconverter.com/
+				return str(gameid)
+		else:
+			print("얘꺼다봄######################################################")
+			return 0
+	else:
+		print("패치시점(start_day)이후 게임 기록 없는 계정임")
+		return 0
+
 
 
 #gameids를 인자로 받아 해당 gameid를 가진 판에서 누가 원딜이었고 누가 서폿이었는지 반환합니다.
@@ -381,10 +444,10 @@ def get_bottom_base(gameid):
 	#print('phase5')
 	global api_key
 	#일단 데이터 요청
-	url = 'https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/'+gameid+'?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'/timeline?api_key='+api_key
 	#position = req_api(url)
-	#position['frames']에 시간별 위치정보 들어있음
-	frames=position['frames']
+	#position['info']['frames']에 시간별 위치정보 들어있음
+	frames=position['info']['frames']
 	dongsun = {}
 	#participantid는 게임내 참여자 참가번호같은거
 	#dongsun['participantid'] ={1분:x,y, 2분:x,y} 이런식으로 저장
@@ -478,7 +541,7 @@ def get_botttom_final(bot):
 	adcs = bot[2:]
 	#여기까지 서폿둘 원딜둘 따로나눔, 이상자료면 원딜 여러명될수도있음
 
-	#url = 'https://kr.api.riotgames.com/lol/match/v4/matches/'+gameid+'?api_key='+api_key
+	#url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'?api_key='+api_key
 	#data = req_api(url)
 	data = ffdata
 
@@ -488,8 +551,8 @@ def get_botttom_final(bot):
 	###승리팀구분, 한쪽만 이기지않으면 오류
 	#승리팀들어갈곳
 	winteam = 0
-	if (teama['win']=='Fail' and teamb['win']=='Win') or (teama['win']=='Win' and teamb['win']=='Fail'):
-		if teama['win']=='Win':
+	if (teama['win']==False and teamb['win']==True) or (teama['win']==True and teamb['win']==False):
+		if teama['win']==True:
 			winteam=teama['teamId']
 		else:
 			winteam=teamb['teamId']
@@ -555,10 +618,10 @@ def new_phase5(gameid):
 	#print('phase5')
 	global api_key
 	#일단 데이터 요청
-	url = 'https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/'+gameid+'?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'/timeline?api_key='+api_key
 	#position = req_api(url)
-	#position['frames']에 시간별 위치정보 들어있음
-	frames=position['frames']
+	#position['info']['frames']에 시간별 위치정보 들어있음
+	frames=position['info']['frames']
 	dongsun = {}
 	#participantid는 게임내 참여자 참가번호같은거
 	#dongsun['participantid'] ={1분:x,y, 2분:x,y} 이런식으로 저장
@@ -584,7 +647,7 @@ def new_phase6(bot):
 	
 	#여기까지 서폿둘 원딜둘 따로나눔, 이상자료면 원딜 여러명될수도있음
 
-	url = 'https://kr.api.riotgames.com/lol/match/v4/matches/'+gameid+'?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'?api_key='+api_key
 	#data = req_api(url)
 	data=ffdata
 	teama =data['teams'][0]
@@ -593,14 +656,17 @@ def new_phase6(bot):
 	###승리팀구분, 한쪽만 이기지않으면 오류
 	#승리팀들어갈곳
 	winteam = 0
-	if (teama['win']=='Fail' and teamb['win']=='Win') or (teama['win']=='Win' and teamb['win']=='Fail'):
-		if teama['win']=='Win':
+	if (teama['win']==False and teamb['win']==True) or (teama['win']==True and teamb['win']==False):
+		if teama['win']==True:
 			winteam=teama['teamId']
 		else:
 			winteam=teamb['teamId']
 
 	else:
+		#print(teama,"<<teamajg\n")
+		#print(teamb,"<<teamb")
 		return 0
+
 	###
 	lastdata = []
 	for jg in bot:
@@ -631,6 +697,7 @@ def new_phase6(bot):
 	if lastdata[-1]!=100 and lastdata[-1]!=200:
 		print('이상 팀 정보3')
 		return 0
+	#print(lastdata,'<<now')
 	return lastdata
 
 
@@ -640,10 +707,10 @@ def mid_phase5(gameid):
 	#print('phase5')
 	global api_key
 	#일단 데이터 요청
-	url = 'https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/'+gameid+'?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'/timeline?api_key='+api_key
 	#position = req_api(url)
-	#position['frames']에 시간별 위치정보 들어있음
-	frames=position['frames']
+	#position['info']['frames']에 시간별 위치정보 들어있음
+	frames=position['info']['frames']
 	dongsun = {}
 	#participantid는 게임내 참여자 참가번호같은거
 	#dongsun['participantid'] ={1분:x,y, 2분:x,y} 이런식으로 저장
@@ -719,11 +786,12 @@ def mid_phase5(gameid):
 				#봇과 봇씨에스가 맞게 나오나 보려면 해제
 				#print(pid,participantFrames[pf]['minionsKilled']+participantFrames[pf]['jungleMinionsKilled'])
 				know_cs[pid]=participantFrames[pf]['minionsKilled']+participantFrames[pf]['jungleMinionsKilled']
-
 	return result,know_cs
 
 
 def mid_phase6(bot):
+	#print(bot,"<<mid")
+	#exit()
 	#print('phase6')
 	#gameid는 gameid에
 	gameid = bot[0][0]
@@ -738,7 +806,7 @@ def mid_phase6(bot):
 	adcs = bot[1:]
 	#여기까지 서폿둘 원딜둘 따로나눔, 이상자료면 원딜 여러명될수도있음
 
-	url = 'https://kr.api.riotgames.com/lol/match/v4/matches/'+gameid+'?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'?api_key='+api_key
 	#data = req_api(url)
 	data=ffdata
 	teama =data['teams'][0]
@@ -747,8 +815,8 @@ def mid_phase6(bot):
 	###승리팀구분, 한쪽만 이기지않으면 오류
 	#승리팀들어갈곳
 	winteam = 0
-	if (teama['win']=='Fail' and teamb['win']=='Win') or (teama['win']=='Win' and teamb['win']=='Fail'):
-		if teama['win']=='Win':
+	if (teama['win']==False and teamb['win']==True) or (teama['win']==True and teamb['win']==False):
+		if teama['win']==True:
 			winteam=teama['teamId']
 		else:
 			winteam=teamb['teamId']
@@ -815,10 +883,10 @@ def get_top_base(gameid):
 	#print('phase5')
 	global api_key
 	#일단 데이터 요청
-	url = 'https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/'+gameid+'?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'/timeline?api_key='+api_key
 	#position = req_api(url)
-	#position['frames']에 시간별 위치정보 들어있음
-	frames=position['frames']
+	#position['info']['frames']에 시간별 위치정보 들어있음
+	frames=position['info']['frames']
 	dongsun = {}
 	#participantid는 게임내 참여자 참가번호같은거
 	#dongsun['participantid'] ={1분:x,y, 2분:x,y} 이런식으로 저장
@@ -836,15 +904,16 @@ def get_top_base(gameid):
 
 	
 	#여기부터 ptl.show()까지 시각화
+	
 	#for i in range(1,11):
 	#	i=str(i)
 	#	for j in dongsun[i]:
 	#		if i=='3':
 	#			plt.scatter(j['x'],j['y'],c='b')
 	#		elif i=='10':
-	#			plt.scatter(j['x'],j['y'],c='b')
+	#			plt.scatter(j['x'],j['y'],c='y')
 	#		else:
-	#			plt.scatter(j['x'],j['y'],c='b')
+	#			plt.scatter(j['x'],j['y'],c='g')
 	#
 	#plt.show()
 	
@@ -873,13 +942,16 @@ def get_top_base(gameid):
 				elsepoint+=1
 		#이렇게 나온 botpoint,botpoint-elsepoint,i를 member에 저장
 		member.append([botpoint,botpoint-elsepoint,i])
+	
 	#member를 botpoint 기준으로 오름차순 정렬
 	member.sort()
+	#print(member.sort())
 	#결과에 get_bot()함수의 인자인 gameid 넣어두고
 	result = [gameid]
 	#botpoint 상위 네명의 participantid를 result에 넣는다
 	#pop()이 리스트의 마지막 요소를 꺼내주는 메소드고 [-1]은 아까 member 양식인[botpoint,botpoint-elsepoint,i]에서 i 즉 participantid
 	#결론적으로 gameid와 botpoint상위 네명의 participantid가 result에 들어가게된다
+
 	for i in range(2):
 		result.append(member.pop()[-1])
 	if len(result)!=3:
@@ -893,6 +965,7 @@ def get_top_base(gameid):
 			if str(participantFrames[pf]['participantId'])==pid:
 				#봇과 봇씨에스가 맞게 나오나 보려면 해제
 				#print(pid,participantFrames[pf]['minionsKilled']+participantFrames[pf]['jungleMinionsKilled'])
+				#exit()
 				know_cs[pid]=participantFrames[pf]['minionsKilled']+participantFrames[pf]['jungleMinionsKilled']
 	#print(result,know_cs)
 
@@ -900,13 +973,14 @@ def get_top_base(gameid):
 
 
 def get_top_final(bot):
+	#print(bot)
 	global api_key
 	#print('phase6')
 	#gameid는 gameid에
 	gameid = bot[0][0]
 	#need는 len이 2
 	need=bot[0][1:]
-	url = 'https://kr.api.riotgames.com/lol/match/v4/matches/'+gameid+'?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'?api_key='+api_key
 	#data = req_api(url)
 	data=ffdata
 	teama =data['teams'][0]
@@ -915,8 +989,8 @@ def get_top_final(bot):
 	###승리팀구분, 한쪽만 이기지않으면 오류
 	#승리팀들어갈곳
 	winteam = 0
-	if (teama['win']=='Fail' and teamb['win']=='Win') or (teama['win']=='Win' and teamb['win']=='Fail'):
-		if teama['win']=='Win':
+	if (teama['win']==False and teamb['win']==True) or (teama['win']==True and teamb['win']==False):
+		if teama['win']==True:
 			winteam=teama['teamId']
 		else:
 			winteam=teamb['teamId']
@@ -928,6 +1002,7 @@ def get_top_final(bot):
 			if str(pt['participantId']) ==pid:
 				lastdata.append([pt['teamId'],keytochamp[str(pt['championId'])]])
 	lastdata.append(winteam)
+	#print(lastdata)
 	return lastdata
 def get_top_full(gameid):
 	#print('탑 정보 분석중')
@@ -939,27 +1014,34 @@ def get_top_full(gameid):
 
 #수집기의 최종 자료인 new_before.json을 만드는 부분입니다.
 def collect(nick,start_day):
+	print('*'*100)
 	print(nick,'의 정보 분석 시작')
 	#닉 -> 어카운트
-	account=summonerName_to_accountId(nick)
+	account=summonerName_to_puuid(nick)
+	#print(account)
 	#어카운트 -> 게임아디
-	gameid = from_accountId_get_gameid(account,start_day)
+	gameid = from_puuid_get_gameid(account,start_day)
+	#print(gameid)
 
 	##5대5 게임인 롤에는 [top, mid, jungle, bottom, support] 5개의 포지션이 있습니다. 
 	#이 아래로는 게임아이디를 -> 각 팀별, 포지션별 챔피언이 무엇인지 구분하는 부분입니다.
 	global position
-	url = 'https://kr.api.riotgames.com/lol/match/v4/timelines/by-match/'+gameid+'?api_key='+api_key
+	#url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'/timeline?api_key='+api_key
+	url = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'/timeline?api_key='+api_key
 	position = req_api(url)
 	global ffdata
-	uurl = 'https://kr.api.riotgames.com/lol/match/v4/matches/'+gameid+'?api_key='+api_key
-	ffdata = req_api(uurl)
-
+	#uurl = 'https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'?api_key='+api_key
+	uurl='https://asia.api.riotgames.com/lol/match/v5/matches/'+gameid+'?api_key='+api_key
+	ffdata = req_api(uurl)['info']
+	
 	#api에서 시스템적 요소인 팀은 잘 구분해줍니다. 포지션은 api의 정확도가 떨어집니다. 그래서 포지션을 알아낼 부분은 따로 만들어야했습니다.
 	#아래 세개의 행은 시간대별 위치좌표를 이용하여 어느 캐릭터가 어떤포지션이었는지를 알아내는 부분입니다.
 	top=get_top_full(gameid)
 	midjg=get_mid_full(gameid)
 	bot=get_bottom_full(gameid)
-	
+	#print(top)
+	#print(midjg)
+	#print(bot)
 
 	#이 아래로는 최종적으로 100팀과 200팀의 top,mid,jg,sup,bot과 승팀, 패팀을 구분하여 최종 데이터를 구성하는 부분입니다.
 	#자료가 오류자료가 아닌지 마지막으로 확인하는 부분이기도 합니다
@@ -1029,25 +1111,31 @@ def collect(nick,start_day):
 
 	thisgame['gameid']=gameid
 	#print('@'*100)
+	
+	'''
 	for i in list(thisgame.keys()):
 		if i=='winteam':
 			print(i,thisgame[i],end=', ')
 		else:
 			print(i,thisgame[i])
-	print('*'*100)
+	'''
+
 	if no_write==1:
-		print(no_write,111111111111111111111111111111)
+		#print(no_write,111111111111111111111111111111)
 		return 0
 	try:
-		print(222222222222222222222222222222222222222,ffiname)
+		#print(222222222222222222222222222222222222222,ffiname)
 		new_before = load_json(ffiname+'new_before')
 	except:
-		print(ffiname,"<<<333333333333333333333333")
+		#print(ffiname,"<<<333333333333333333333333")
 		write_json(ffiname+'new_before',[])
 		new_before = load_json(ffiname+'new_before')
 	new_before.append(thisgame)
 	write_json(ffiname+'new_before',new_before)
-
+	print('BLUE:',thisgame['team_blue'])
+	print('RED:',thisgame['team_red'])
+	print('WIN:',thisgame['winteam'],'GAMEID:',thisgame['gameid'])
+	print('*'*100)
 #아래 함수 get_4000과 세트입니다. 분석대상인 자료를 수집하는 부분입니다. 
 #조사를 원하는 metal의 tier1/2/3/4를 1000명씩 수집해 4000명을 만들었습니다.
 def get_user(metal,tier,personnel):
@@ -1142,6 +1230,7 @@ def start(start_day,tier,version):
 			telegram_sendMSG(ids[id],msg)
 	global quit_sign
 	global api_key
+	api_key=getkey() #################cycy
 	#롤 기본정보 수집//버전, 패치별 코드 수정 필요
 	global ffiname
 	ffiname=version.split('.')[0]+'_'+version.split('.')[1]
@@ -1209,4 +1298,4 @@ def start(start_day,tier,version):
 					print('백업완료, 메일완료')
 					count=0
 
-start('2021-09-22','PLATINUM','11.19')
+start('2021-09-29','GOLD','11.19')
