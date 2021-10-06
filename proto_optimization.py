@@ -371,7 +371,7 @@ def from_accountId_get_gameid(accountId,start_day):
 					print("얘꺼 이번패치 기록 끝")
 					return 3
 				else:
-					print("게임아이디 수집 완료$")
+					print("게임아이디 수집 완료")
 					return str(gameid)
 		else:
 			print("얘꺼다봄######################################################")
@@ -422,6 +422,8 @@ def from_puuid_get_gameid(puuid,start_day):
 				write_json(ffiname+'gameids',gameids)
 				#매 패치마다 수정해야하는 부분입니다. 에포크밀리초로 지난 패치시점의 게임기록은 기록하지 않습니다.
 				#https://www.epochconverter.com/
+				global gst
+				gst = game_start_time
 				return str(gameid)
 		else:
 			print("얘꺼다봄######################################################")
@@ -1130,8 +1132,28 @@ def collect(nick,start_day):
 		#print(ffiname,"<<<333333333333333333333333")
 		write_json(ffiname+'new_before',[])
 		new_before = load_json(ffiname+'new_before')
+
+
+	#전체데이터용
+	try:
+		#print(222222222222222222222222222222222222222,ffiname)
+		whole_new_before = load_json('whole_new_before')
+	except:
+		#print(ffiname,"<<<333333333333333333333333")
+		write_json('whole_new_before',[])
+		whole_new_before = load_json('whole_new_before')
+
+	copy_thisgame =thisgame.copy()
+	copy_thisgame['gamestart_e_millisecond']=gst
+	copy_thisgame['version']=g_version
+	
 	new_before.append(thisgame)
 	write_json(ffiname+'new_before',new_before)
+
+	whole_new_before.append(copy_thisgame)
+	write_json('whole_new_before',whole_new_before)
+
+
 	print('BLUE:',thisgame['team_blue'])
 	print('RED:',thisgame['team_red'])
 	print('WIN:',thisgame['winteam'],'GAMEID:',thisgame['gameid'])
@@ -1234,7 +1256,8 @@ def start(start_day,tier,version):
 	#롤 기본정보 수집//버전, 패치별 코드 수정 필요
 	global ffiname
 	ffiname=version.split('.')[0]+'_'+version.split('.')[1]
-
+	global g_version
+	g_version=version
 	phase1(version)
 	while True:
 		count = 0
@@ -1298,4 +1321,4 @@ def start(start_day,tier,version):
 					print('백업완료, 메일완료')
 					count=0
 
-start('2021-09-29','GOLD','11.19')
+start('2021-10-06','GOLD','11.20')
