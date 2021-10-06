@@ -878,7 +878,7 @@ def get_mid_full(gameid):
 	#print('미드 정보 분석중')
 	return mid_phase6(mid_phase5(gameid))
 
-
+#jyanoos
 
 #아래 get_top_final(), get_top_full과 세트입니다 원리는 get_bot 세트와 같습니다
 def get_top_base(gameid):
