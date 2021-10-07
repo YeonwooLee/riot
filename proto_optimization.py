@@ -19,6 +19,58 @@ import email
 from email.mime.text import MIMEText
 import random
 import telegram
+import cx_Oracle
+
+def mydb_insert(sql):
+	sql = sql.replace('\n',' ')
+	#print(sql)
+	dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+	db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+
+	cursor = db.cursor()
+	cursor.execute(sql)
+	#cursor.fetchall()
+	db.commit()
+	cursor.close()
+	db.close()
+
+
+
+def new_before_insert_oracle(temp_data):
+	#승패 변수 기입
+	if temp_data["winteam"]=='red':
+		red_win='1'
+		blue_win='0'
+	elif temp_data['winteam']=='blue':
+		blue_win='1'
+		red_win='0'
+	else:
+		red_win='-1'
+		blue_win='-1'
+
+	#레드팀 기입
+	sql = '''insert into lol_red(gameid, win, top, jungle, mid, adc, sup)
+	values('{gameid}','{win}','{top}','{jungle}','{mid}','{adc}','{sup}')'''.format(gameid=temp_data['gameid'],\
+																					 win=red_win,\
+																					  top=temp_data['team_red']['top'], jungle=temp_data['team_red']['jungle'], mid=temp_data['team_red']['mid'], adc=temp_data['team_red']['adc'], sup=temp_data['team_red']['sup'])
+
+	mydb_insert(sql)
+
+	#블루팀 기입
+	sql = '''insert into lol_blue(gameid, win, top, jungle, mid, adc, sup)
+	values('{gameid}','{win}','{top}','{jungle}','{mid}','{adc}','{sup}')'''.format(gameid=temp_data['gameid'],\
+																					 win=blue_win,\
+																					  top=temp_data['team_blue']['top'], jungle=temp_data['team_blue']['jungle'], mid=temp_data['team_blue']['mid'], adc=temp_data['team_blue']['adc'], sup=temp_data['team_blue']['sup'])
+
+	mydb_insert(sql)
+
+	#시간,버전 기입
+	sql = '''insert into lol_time_v(gameid, start_time, version)
+	values('{gameid}',{start_time},'{version}')'''.format(gameid=temp_data['gameid'],\
+															start_time=temp_data['gamestart_e_millisecond'],\
+															version=temp_data['version'])
+	mydb_insert(sql)
+
 telgm_token = '1925566531:AAElSg-wydMKDBdCcH0JlPJAIKd5fzr7W1I'
 bot = telegram.Bot(token = telgm_token)
 
@@ -1153,6 +1205,8 @@ def collect(nick,start_day):
 	whole_new_before.append(copy_thisgame)
 	write_json('whole_new_before',whole_new_before)
 
+	temp_data=copy_thisgame
+	new_before_insert_oracle(temp_data)
 
 	print('BLUE:',thisgame['team_blue'])
 	print('RED:',thisgame['team_red'])
@@ -1266,6 +1320,10 @@ def start(start_day,tier,version):
 			send_once=0
 			err_key = api_key
 			while True:
+				if send_once==0:
+					send_all_ids("키 교체 필요")
+					send_once=1
+	
 				#success = get_key_from_mail()
 				if load_json('quit_sign')==0:
 					success=1
