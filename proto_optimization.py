@@ -20,6 +20,326 @@ from email.mime.text import MIMEText
 import random
 import telegram
 import cx_Oracle
+import sys
+import threading
+import subprocess
+import locale
+
+def input_timer(prompt, timeout_sec):
+
+    class Local:
+        # check if timeout occured
+        _timeout_occured = False
+
+        def on_timeout(self, process):
+            self._timeout_occured = True
+            process.kill()
+            # clear stdin buffer (for linux)
+            # when some keys hit and timeout occured before enter key press,
+            # that input text passed to next input().
+            # remove stdin buffer.
+            try:
+                import termios
+                termios.tcflush(sys.stdin, termios.TCIFLUSH)
+            except ImportError:
+                # windows, just exit
+                pass
+
+        def input_timer_main(self, prompt_in, timeout_sec_in):
+            # print with no new line
+            print(prompt_in, end="")
+
+            # print prompt_in immediately
+            sys.stdout.flush()
+
+            # new python input process create.
+            # and print it for pass stdout
+            cmd = [sys.executable, '-c', 'print(input())']
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+                timer_proc = threading.Timer(timeout_sec_in, self.on_timeout, [proc])
+                try:
+                    # timer set
+                    timer_proc.start()
+                    stdout, stderr = proc.communicate()
+
+                    # get stdout and trim new line character
+                    result = stdout.decode(locale.getpreferredencoding()).strip("\r\n")
+                finally:
+                    # timeout clear
+                    timer_proc.cancel()
+
+            # timeout check
+            if self._timeout_occured is True:
+                # move the cursor to next line
+                print("")
+                raise TimeoutError
+            return result
+
+    t = Local()
+    return t.input_timer_main(prompt, timeout_sec)
+
+def ender(time):
+    try:
+        a = input_timer("끌꺼면 123입력 >>> ", time)
+        if a=="123":
+            sys.exit()
+    except TimeoutError as e:
+        #print("timeout...")
+        pass
+
+#조합별 승률 db에 기입
+def match_db(copy_thisgame):
+
+
+	#완성체들 dsn아이피 102->101할 필요 있음 아이디 yanoos->yanoos로바꿀필요 있음
+	##########################################################################################
+	#접속에 table_name 있으면 1, 없으면0 리턴
+	def table_exist(table_name):
+		#sql = sql.replace('\n',' ')
+		sql = "select count(*) from all_tables where table_name=\'"+table_name+"\'"
+		#print(sql)
+		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+
+		cursor = db.cursor()
+		cursor.execute(sql)
+		result = cursor.fetchall()
+		db.commit()
+		cursor.close()
+		db.close()
+
+		return str(result[0][0])
+
+	#table_name에 combi_name 행 있는지? 있으면1 없으면 0 리턴
+	def row_exist(table_name,combi_name):
+		#sql = sql.replace('\n',' ')
+		sql = "select * from "+table_name+" where enemy_combi=\'"+combi_name+"\'"
+		#print(sql)
+		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+
+		cursor = db.cursor()
+		cursor.execute(sql)
+		result = cursor.fetchall()
+		db.commit()
+		cursor.close()
+		db.close()
+		return str(len(result))
+	#whole +=1, win_lose +=1, table_name은 기준팀, enemy_data=상대팀 table_name테이블의 enemy_data행을 수정함
+	def update_lol(table_name,enemy_data,win_lose):
+		#enemy_data = ('EZ_SN', 1, 0, 1)
+		#sql = sql.replace('\n',' ')
+		
+		#print(sql)
+		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+		cursor = db.cursor()
+
+		sql = "update "+table_name+" set whole=whole+1 where enemy_combi=\'"+enemy_data+"\'"
+		cursor.execute(sql)
+
+		if win_lose=='win':
+			sql = "update "+table_name+" set win=win+1 where enemy_combi='"+enemy_data+"'"
+		else:
+			sql = "update "+table_name+" set lose=lose+1 where enemy_combi='"+enemy_data+"'"
+		cursor.execute(sql)
+
+		sql="update "+table_name+" set win_rate=round(win/whole*100,2) where enemy_combi='"+enemy_data+"'"
+		cursor.execute(sql)
+		#result = cursor.fetchall()
+		db.commit()
+		cursor.close()
+		db.close()
+		
+	#테이블생성
+	def crt_tbl(table_name):
+		#sql = sql.replace('\n',' ')
+		#print(sql)
+
+		sql='''
+		create table {tbn}(
+		enemy_combi varchar2(100) not null,
+		whole number not null,
+		win number not null,
+		lose number not null,
+		win_rate number not null,
+		constraint pk_{tbn} primary key(enemy_combi)
+		)
+		'''.format(tbn=table_name)
+		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+
+		cursor = db.cursor()
+		cursor.execute(sql)
+		#cursor.fetchall()
+		db.commit()
+		cursor.close()
+		db.close()
+	def mk_ko_to_en(vesion):
+		def phase1(version):
+
+			#print('한글수집')
+			#챔피언 이상한 정보도 들어있는 드래곤 딕딕딕구조 {키:{},키:{}}
+			#dict_keys(['type', 'format', 'version', 'data'])
+			global keytochamp
+			keytochamp={}
+			#버전바뀔때마다 교체해줘야합니다. 적어도 신챔 나올때는 교체해줘야됩니다.
+			#http://ddragon.leagueoflegends.com/cdn/10.2.1/data/ko_KR/champion.json -> http://ddragon.leagueoflegends.com/cdn/11.3.1/data/ko_KR/champion.json
+			whole_champions=requests.get("http://ddragon.leagueoflegends.com/cdn/"+version+".1/data/ko_KR/champion.json").json()
+			for champ in list(whole_champions['data'].keys()):
+				keytochamp[whole_champions['data'][champ]['key']]=whole_champions['data'][champ]['name']
+
+			#시즌정보 / [{}]
+			season_data = requests.get("http://static.developer.riotgames.com/docs/lol/seasons.json").json()
+
+			#큐타입정보[{}]
+			#{'queueId': 420, 'map': "Summoner's Rift", 'description': '5v5 Ranked Solo games'}
+			queqe_data = requests.get("http://static.developer.riotgames.com/docs/lol/queues.json").json()
+
+			###################여기까지기본정보받아오는곳
+			return keytochamp
+
+
+		def phase1_1(version):
+
+			#print('영어수집')
+			#챔피언 이상한 정보도 들어있는 드래곤 딕딕딕구조 {키:{},키:{}}
+			#dict_keys(['type', 'format', 'version', 'data'])
+			global keytochamp
+			keytochamp={}
+			#버전바뀔때마다 교체해줘야합니다. 적어도 신챔 나올때는 교체해줘야됩니다.
+			#http://ddragon.leagueoflegends.com/cdn/10.2.1/data/ko_KR/champion.json -> http://ddragon.leagueoflegends.com/cdn/11.3.1/data/ko_KR/champion.json
+			whole_champions=requests.get("http://ddragon.leagueoflegends.com/cdn/"+version+".1/data/en_US/champion.json").json()
+			for champ in list(whole_champions['data'].keys()):
+				keytochamp[whole_champions['data'][champ]['key']]=whole_champions['data'][champ]['name']
+
+			#시즌정보 / [{}]
+			season_data = requests.get("http://static.developer.riotgames.com/docs/lol/seasons.json").json()
+
+			#큐타입정보[{}]
+			#{'queueId': 420, 'map': "Summoner's Rift", 'description': '5v5 Ranked Solo games'}
+			queqe_data = requests.get("http://static.developer.riotgames.com/docs/lol/queues.json").json()
+
+			###################여기까지기본정보받아오는곳
+			return keytochamp
+
+
+		keytocham_en=phase1_1(vesion)
+		keytochamp_ko=phase1(vesion)
+		
+		ko_to_eng={}
+		for i in keytochamp_ko.keys():
+			ko_to_eng[keytochamp_ko[i]]=keytocham_en[i].upper().replace(" ","")
+		return ko_to_eng
+
+	#insert쿼리 수행
+	def new_enemy_combi(table_name,enemy_combi,win_lose):
+		#레드팀 기입
+		if win_lose=='win':
+			sql = '''insert into {tbl}(enemy_combi,whole,win,lose,win_rate)
+			values('{enecombi}',{whole},{win},{lose},{winrate})'''.format(tbl=table_name,\
+																enecombi=enemy_combi,\
+																whole=1,\
+																win=1,\
+																lose=0,\
+																winrate=100)
+		elif win_lose=='lose':
+			sql = '''insert into {tbl}(enemy_combi,whole,win,lose,win_rate)
+			values('{enecombi}',{whole},{win},{lose},{winrate})'''.format(tbl=table_name,\
+																enecombi=enemy_combi,\
+																whole=1,\
+																win=0,\
+																lose=1,\
+																winrate=0)
+		sql = sql.replace('\n',' ')
+		#print(sql)
+		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+
+		cursor = db.cursor()
+		cursor.execute(sql)
+		#cursor.fetchall()
+		db.commit()
+		cursor.close()
+		db.close()
+
+
+	#테스트들
+	###########################################################################################
+
+	#table_exist(copy_thisgame)
+	#버전명 스트링
+	strVer=copy_thisgame['version'].split('.')[0]+"_"+copy_thisgame['version'].split('.')[1]
+
+	#한국챔프명 영어로
+	ko_to_en = mk_ko_to_en(copy_thisgame['version'])
+		
+	for i in ko_to_en.keys():
+		if "'" in ko_to_en[i]:
+			tempset=ko_to_en[i].replace("'","")
+			ko_to_en[i]=tempset
+	#테이블, 컬럼명으로 쓰일 제목 작성
+	blue_comb = ko_to_en[copy_thisgame['team_blue']['adc']]+"_"+ko_to_en[copy_thisgame['team_blue']['sup']]+"_"+strVer
+	red_comb = ko_to_en[copy_thisgame['team_red']['adc']]+"_"+ko_to_en[copy_thisgame['team_red']['sup']]+"_"+strVer
+
+	nstr="_"+strVer
+
+	if table_exist("ALL_WINRATE"+nstr)=='0':
+		crt_tbl("ALL_WINRATE"+nstr)
+	#승패팀 구분
+	if copy_thisgame['winteam']=='red':
+		winner=red_comb
+		loser=blue_comb
+
+	elif copy_thisgame['winteam']=='blue':
+		winner=blue_comb
+		loser=red_comb
+
+
+	#승리팀 테이블 작성
+	#1. 승리팀명 테이블 있음?
+	if table_exist(winner)=='1':
+		#승리팀명 테이블 있으면 승리팀명 테이블에 패배팀명 row도 있냐?
+		if row_exist(winner,loser)=='1':
+			#승팀테이블에 패팀row 있으면 승리팀.패배팀 update
+			update_lol(winner,loser,'win')
+		else:
+			#승팀테이블에 패팀row 없으면 승리팀.패배팀 작성
+			new_enemy_combi(winner,loser,'win')
+	#승팀명 테이블 없으면
+	else:
+		#승팀명 테이블 작성
+		crt_tbl(winner)
+		#승팀.패팀 row 작성
+		new_enemy_combi(winner,loser,'win')
+
+
+	if row_exist("ALL_WINRATE"+nstr,winner)=='1':
+		update_lol("ALL_WINRATE"+nstr,winner,'win')
+	else:
+		new_enemy_combi("ALL_WINRATE"+nstr,winner,'win')
+
+	#패배팀 테이블 작성
+	#1. 패배팀명 테이블 있음?
+	if table_exist(loser)=='1':
+		#패배팀명 테이블 있으면 패배팀명 테이블에 승리팀명 row도 있냐?
+		if row_exist(loser,winner)=='1':
+			#패팀테이블에 승팀row 있으면 패배팀.승리팀 update
+			update_lol(loser,winner,'lose')
+		else:
+			#패팀테이블에 승팀row 없으면 패팀.승팀 작성
+			new_enemy_combi(loser,winner,'lose')
+	#패팀명 테이블 없으면
+	else:
+		#패팀명 테이블 작성
+		crt_tbl(loser)
+		#패팀.승팀 row 작성
+		new_enemy_combi(loser,winner,'lose')
+
+	if row_exist("ALL_WINRATE"+nstr,loser)=='1':
+		update_lol("ALL_WINRATE"+nstr,loser,'lose')
+	else:
+		new_enemy_combi("ALL_WINRATE"+nstr,loser,'lose')
 
 def mydb_insert(sql):
 	sql = sql.replace('\n',' ')
@@ -80,6 +400,10 @@ def telegram_sendMSG(chatId,msg):
 	#테스트후 해제 주석
 	bot.sendMessage(chat_id = chatId, text=msg)
 
+def send_all_ids(msg):
+	ids={"연우":"1993842151", "재구":"747977556", "태양":'2048880707'}
+	for id in ids.keys():
+		telegram_sendMSG(ids[id],msg)
 
 #날짜 -> 에포크밀리초 (시간은 롤 패치 종료시간인 오전10시 고정해둠)
 def date_to_millisecond(start_day):
@@ -1207,7 +1531,7 @@ def collect(nick,start_day):
 
 	temp_data=copy_thisgame
 	new_before_insert_oracle(temp_data)
-
+	match_db(temp_data)
 	print('BLUE:',thisgame['team_blue'])
 	print('RED:',thisgame['team_red'])
 	print('WIN:',thisgame['winteam'],'GAMEID:',thisgame['gameid'])
@@ -1340,11 +1664,12 @@ def start(start_day,tier,version):
 					send_before()
 					break
 				else:
-					print("key 교체 대기중",end=' ')
-					now = datetime.datetime.now()
-					print(now)
-					time.sleep(10)
+					send_all_ids("키 교체 필요")
+					time.sleep(300)
 					if send_once==0:
+						print("key 교체 대기중",end=' ')
+						now = datetime.datetime.now()
+						print(now)
 						send_all_ids("키 교체 필요")
 						send_once=1
 		
@@ -1359,7 +1684,11 @@ def start(start_day,tier,version):
 		#2. 각 유저별 가장 최근 게임이면서 이번 게임 버전에 맞는 게임이라면 분석하여 new_before에 기록
 		for user in user_list:
 			try:
+				print("")
+				ender(2)
 				collect(user,start_day)
+			except SystemExit:
+				quit()
 			except:
 				if quit_sign==1:
 					break
