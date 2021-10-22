@@ -78,15 +78,17 @@ def input_timer(prompt, timeout_sec):
     t = Local()
     return t.input_timer_main(prompt, timeout_sec)
 
-def ender(time):
+def ender():
     try:
-        a = input_timer("끌꺼면 123입력 >>> ", time)
-        if a=="123":
+        a = open("ender.txt","r")
+        a=a.readline()
+        if "123" in a:
             sys.exit()
     except TimeoutError as e:
         #print("timeout...")
         pass
-
+    except FileNotFoundError as ee:
+    	open("ender.txt","w")
 #조합별 승률 db에 기입
 def match_db(copy_thisgame):
 
@@ -626,7 +628,7 @@ def req_api(url):
 			return 0
 	#반응이 200이면 정상입니다.
 	else:
-		time.sleep(1.5)
+		time.sleep(0.1)
 		return response.json()
 
 
@@ -1682,10 +1684,11 @@ def start(start_day,tier,version):
 			continue
 
 		#2. 각 유저별 가장 최근 게임이면서 이번 게임 버전에 맞는 게임이라면 분석하여 new_before에 기록
+		timess=0
 		for user in user_list:
 			try:
-				print("")
-				ender(2)
+				#print("")
+				#ender()
 				collect(user,start_day)
 			except SystemExit:
 				quit()
@@ -1706,6 +1709,11 @@ def start(start_day,tier,version):
 
 					send_before()
 					print('백업완료, 메일완료')
+					#ender(2)
 					count=0
+					try:
+						ender()
+					except SystemExit:
+						quit()
 
-start('2021-10-06','GOLD','11.20')
+start('2021-10-20','GOLD','11.21')
