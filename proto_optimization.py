@@ -297,24 +297,24 @@ def match_db(copy_thisgame):
 		winner=blue_comb
 		loser=red_comb
 
-
-	#승리팀 테이블 작성
-	#1. 승리팀명 테이블 있음?
-	if table_exist(winner)=='1':
-		#승리팀명 테이블 있으면 승리팀명 테이블에 패배팀명 row도 있냐?
-		if row_exist(winner,loser)=='1':
-			#승팀테이블에 패팀row 있으면 승리팀.패배팀 update
-			update_lol(winner,loser,'win')
-		else:
-			#승팀테이블에 패팀row 없으면 승리팀.패배팀 작성
-			new_enemy_combi(winner,loser,'win')
-	#승팀명 테이블 없으면
-	else:
-		#승팀명 테이블 작성
-		crt_tbl(winner)
-		#승팀.패팀 row 작성
-		new_enemy_combi(winner,loser,'win')
-
+	'''
+				#승리팀 테이블 작성
+				#1. 승리팀명 테이블 있음?
+				if table_exist(winner)=='1':
+					#승리팀명 테이블 있으면 승리팀명 테이블에 패배팀명 row도 있냐?
+					if row_exist(winner,loser)=='1':
+						#승팀테이블에 패팀row 있으면 승리팀.패배팀 update
+						update_lol(winner,loser,'win')
+					else:
+						#승팀테이블에 패팀row 없으면 승리팀.패배팀 작성
+						new_enemy_combi(winner,loser,'win')
+				#승팀명 테이블 없으면
+				else:
+					#승팀명 테이블 작성
+					crt_tbl(winner)
+					#승팀.패팀 row 작성
+					new_enemy_combi(winner,loser,'win')
+			'''
 
 	if row_exist("ALL_WINRATE"+nstr,winner)=='1':
 		update_lol("ALL_WINRATE"+nstr,winner,'win')
@@ -323,26 +323,26 @@ def match_db(copy_thisgame):
 
 	#패배팀 테이블 작성
 	#1. 패배팀명 테이블 있음?
-	if table_exist(loser)=='1':
-		#패배팀명 테이블 있으면 패배팀명 테이블에 승리팀명 row도 있냐?
-		if row_exist(loser,winner)=='1':
-			#패팀테이블에 승팀row 있으면 패배팀.승리팀 update
-			update_lol(loser,winner,'lose')
-		else:
-			#패팀테이블에 승팀row 없으면 패팀.승팀 작성
-			new_enemy_combi(loser,winner,'lose')
-	#패팀명 테이블 없으면
-	else:
-		#패팀명 테이블 작성
-		crt_tbl(loser)
-		#패팀.승팀 row 작성
-		new_enemy_combi(loser,winner,'lose')
-
+	'''if table_exist(loser)=='1':
+					#패배팀명 테이블 있으면 패배팀명 테이블에 승리팀명 row도 있냐?
+					if row_exist(loser,winner)=='1':
+						#패팀테이블에 승팀row 있으면 패배팀.승리팀 update
+						update_lol(loser,winner,'lose')
+					else:
+						#패팀테이블에 승팀row 없으면 패팀.승팀 작성
+						new_enemy_combi(loser,winner,'lose')
+				#패팀명 테이블 없으면
+				else:
+					#패팀명 테이블 작성
+					crt_tbl(loser)
+					#패팀.승팀 row 작성
+					new_enemy_combi(loser,winner,'lose')
+			'''
 	if row_exist("ALL_WINRATE"+nstr,loser)=='1':
 		update_lol("ALL_WINRATE"+nstr,loser,'lose')
 	else:
 		new_enemy_combi("ALL_WINRATE"+nstr,loser,'lose')
-
+	
 def mydb_insert(sql):
 	sql = sql.replace('\n',' ')
 	#print(sql)
@@ -628,7 +628,7 @@ def req_api(url):
 			return 0
 	#반응이 200이면 정상입니다.
 	else:
-		time.sleep(0.1)
+		#time.sleep(0.1)
 		return response.json()
 
 
@@ -1700,7 +1700,7 @@ def start(start_day,tier,version):
 			#try절에 문제 없으면 else문도 실행됨//1000개 자료 기입시마다 1번씩 메일로 백업
 			else:
 				count+=1
-				if count==500:
+				if count==5000:
 					g_backup = load_json(ffiname+'gameids')
 					write_json(ffiname+'backup_gameids',g_backup)
 					
