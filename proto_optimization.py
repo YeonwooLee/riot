@@ -1688,7 +1688,7 @@ def start(start_day,tier,version):
 		for user in user_list:
 			try:
 				#print("")
-				#ender()
+				ender()
 				collect(user,start_day)
 			except SystemExit:
 				quit()
@@ -1716,4 +1716,4 @@ def start(start_day,tier,version):
 					except SystemExit:
 						quit()
 
-start('2021-10-20','GOLD','11.21')
+start('2021-11-17','SILVER','11.23')
