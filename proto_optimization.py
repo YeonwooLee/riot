@@ -93,14 +93,14 @@ def ender():
 def match_db(copy_thisgame):
 
 
-	#완성체들 dsn아이피 102->101할 필요 있음 아이디 yanoos->yanoos로바꿀필요 있음
+	#완성체들 dsn아이피 102->102할 필요 있음 아이디 yanoos->yanoos로바꿀필요 있음
 	##########################################################################################
 	#접속에 table_name 있으면 1, 없으면0 리턴
 	def table_exist(table_name):
 		#sql = sql.replace('\n',' ')
 		sql = "select count(*) from all_tables where table_name=\'"+table_name+"\'"
 		#print(sql)
-		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
 		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
@@ -117,7 +117,7 @@ def match_db(copy_thisgame):
 		#sql = sql.replace('\n',' ')
 		sql = "select * from "+table_name+" where enemy_combi=\'"+combi_name+"\'"
 		#print(sql)
-		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
 		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
@@ -133,7 +133,7 @@ def match_db(copy_thisgame):
 		#sql = sql.replace('\n',' ')
 		
 		#print(sql)
-		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
 		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
 		cursor = db.cursor()
 
@@ -168,7 +168,7 @@ def match_db(copy_thisgame):
 		constraint pk_{tbn} primary key(enemy_combi)
 		)
 		'''.format(tbn=table_name)
-		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
 		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
@@ -255,7 +255,7 @@ def match_db(copy_thisgame):
 																winrate=0)
 		sql = sql.replace('\n',' ')
 		#print(sql)
-		dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
 		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
@@ -346,7 +346,7 @@ def match_db(copy_thisgame):
 def mydb_insert(sql):
 	sql = sql.replace('\n',' ')
 	#print(sql)
-	dsn = cx_Oracle.makedsn("192.168.219.101","1521","xe")
+	dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
 	db =cx_Oracle.connect("yanoos","dudn0915",dsn)
 
 	cursor = db.cursor()
