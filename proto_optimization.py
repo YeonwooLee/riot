@@ -101,7 +101,7 @@ def match_db(copy_thisgame):
 		sql = "select count(*) from all_tables where table_name=\'"+table_name+"\'"
 		#print(sql)
 		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
-		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+		db =cx_Oracle.connect("jyanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
 		cursor.execute(sql)
@@ -118,7 +118,7 @@ def match_db(copy_thisgame):
 		sql = "select * from "+table_name+" where enemy_combi=\'"+combi_name+"\'"
 		#print(sql)
 		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
-		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+		db =cx_Oracle.connect("jyanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
 		cursor.execute(sql)
@@ -134,7 +134,7 @@ def match_db(copy_thisgame):
 		
 		#print(sql)
 		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
-		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+		db =cx_Oracle.connect("jyanoos","dudn0915",dsn)
 		cursor = db.cursor()
 
 		sql = "update "+table_name+" set whole=whole+1 where enemy_combi=\'"+enemy_data+"\'"
@@ -169,7 +169,7 @@ def match_db(copy_thisgame):
 		)
 		'''.format(tbn=table_name)
 		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
-		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+		db =cx_Oracle.connect("jyanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
 		cursor.execute(sql)
@@ -256,7 +256,7 @@ def match_db(copy_thisgame):
 		sql = sql.replace('\n',' ')
 		#print(sql)
 		dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
-		db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+		db =cx_Oracle.connect("jyanoos","dudn0915",dsn)
 
 		cursor = db.cursor()
 		cursor.execute(sql)
@@ -347,7 +347,7 @@ def mydb_insert(sql):
 	sql = sql.replace('\n',' ')
 	#print(sql)
 	dsn = cx_Oracle.makedsn("192.168.219.102","1521","xe")
-	db =cx_Oracle.connect("yanoos","dudn0915",dsn)
+	db =cx_Oracle.connect("jyanoos","dudn0915",dsn)
 
 	cursor = db.cursor()
 	cursor.execute(sql)
