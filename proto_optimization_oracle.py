@@ -1716,4 +1716,7 @@ def start(start_day,tier,version):
 					except SystemExit:
 						quit()
 
-start('2021-11-17','SILVER','11.23')
+start('2021-12-08','PLATINUM','11.24')
+#새 설치 세팅
+#api_key.txt 생성 - 내용={api_key}+' '+'\n'
+#start 함수 인자 세팅 - 이번패치시작일, 검색티어, 버전
