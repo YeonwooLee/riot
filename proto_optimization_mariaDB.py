@@ -1755,3 +1755,4 @@ start('2021-12-08', 'GOLD', '11.24')
 # 새 설치 세팅
 # api_key.txt 생성 - 내용={api_key}+' '+'\n'
 # start 함수 인자 세팅 - 이번패치시작일, 검색티어, 버전
+#lol_bot 스키마 아래에 lol_blue, lol_red, lol_time_v 테이블 세팅 필요(readme.md참고)
