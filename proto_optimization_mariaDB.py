@@ -416,7 +416,7 @@ def new_before_insert_oracle(temp_data):
     conn.commit()
     cursor.close()
     conn.close()
-
+##
 telgm_token = '1925566531:AAElSg-wydMKDBdCcH0JlPJAIKd5fzr7W1I'
 bot = telegram.Bot(token=telgm_token)
 
@@ -1756,3 +1756,4 @@ start('2021-12-08', 'GOLD', '11.24')
 # api_key.txt 생성 - 내용={api_key}+' '+'\n'
 # start 함수 인자 세팅 - 이번패치시작일, 검색티어, 버전
 #lol_bot 스키마 아래에 lol_blue, lol_red, lol_time_v 테이블 세팅 필요(readme.md참고)
+#eeee
