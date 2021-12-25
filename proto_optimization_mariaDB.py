@@ -267,10 +267,18 @@ def match_db(copy_thisgame):
     # 한국챔프명 영어로
     ko_to_en = mk_ko_to_en(copy_thisgame['version'])
 
+    #ka'isa 이딴거 바꾸는부분
+
     for i in ko_to_en.keys():
         if "'" in ko_to_en[i]:
             tempset = ko_to_en[i].replace("'", "")
             ko_to_en[i] = tempset
+
+    #영어로 조합명 뽑기 싫어서 한글로 다시 바꿈
+    #속도 지장 별로 없고 아예 주석처리해두면 잃어버릴까봐 사용후 재변경으로 로직
+    for i in ko_to_en.keys():
+        ko_to_en[i]=i
+
     # 테이블, 컬럼명으로 쓰일 제목 작성
     blue_comb = ko_to_en[copy_thisgame['team_blue']['adc']] + "_" + ko_to_en[
         copy_thisgame['team_blue']['sup']] + "_" + strVer
